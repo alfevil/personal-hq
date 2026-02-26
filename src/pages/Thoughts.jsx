@@ -3,9 +3,9 @@ import { Pin, FolderOpen, Trash2, Hash } from 'lucide-react'
 import { useThoughts } from '../hooks/useThoughts'
 
 const FILTERS = [
-  { id: 'all',   label: 'Всё' },
+  { id: 'all', label: 'Всё' },
   { id: 'today', label: 'Сегодня' },
-  { id: 'week',  label: 'Неделя' },
+  { id: 'week', label: 'Неделя' },
 ]
 
 function formatDate(dateStr) {
@@ -42,12 +42,7 @@ export default function Thoughts({ onMoveToProject, projects }) {
     await add(trimmed)
   }
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSubmit()
-    }
-  }
+
 
   const filteredThoughts = thoughts.filter(t => {
     const d = new Date(t.created_at)
@@ -78,13 +73,11 @@ export default function Thoughts({ onMoveToProject, projects }) {
             ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
             placeholder="Что на уме? Используй #тег для категоризации..."
             rows={2}
             className="w-full px-4 pt-3 pb-0 text-sm text-text-primary placeholder-text-muted resize-none bg-transparent"
           />
-          <div className="flex items-center justify-between px-3 py-2">
-            <span className="text-xs text-text-muted">Enter — сохранить · Shift+Enter — перенос</span>
+          <div className="flex items-center justify-end px-3 py-2">
             <button
               onClick={handleSubmit}
               disabled={!input.trim()}
@@ -102,11 +95,10 @@ export default function Thoughts({ onMoveToProject, projects }) {
           <button
             key={f.id}
             onClick={() => setFilter(f.id)}
-            className={`flex-shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-              filter === f.id
+            className={`flex-shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-all ${filter === f.id
                 ? 'bg-accent/20 text-accent border border-accent/30'
                 : 'text-text-secondary hover:text-text-primary'
-            }`}
+              }`}
           >
             {f.label}
           </button>
@@ -115,11 +107,10 @@ export default function Thoughts({ onMoveToProject, projects }) {
           <button
             key={tag}
             onClick={() => setTagFilter(tagFilter === tag ? null : tag)}
-            className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
-              tagFilter === tag
+            className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${tagFilter === tag
                 ? 'bg-accent/20 text-accent border border-accent/30'
                 : 'text-text-muted hover:text-text-secondary'
-            }`}
+              }`}
           >
             <Hash size={10} />
             {tag}
@@ -161,11 +152,10 @@ export default function Thoughts({ onMoveToProject, projects }) {
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => togglePin(thought.id, thought.pinned)}
-                  className={`p-1.5 rounded-lg transition-all ${
-                    thought.pinned
+                  className={`p-1.5 rounded-lg transition-all ${thought.pinned
                       ? 'text-accent bg-accent/10'
                       : 'text-text-muted hover:text-text-primary hover:bg-bg-hover'
-                  }`}
+                    }`}
                   title="Закрепить"
                 >
                   <Pin size={13} className={thought.pinned ? 'fill-current' : ''} />

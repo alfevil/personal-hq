@@ -4,14 +4,12 @@ import {
   Tooltip, ResponsiveContainer, BarChart, Bar
 } from 'recharts'
 import { Plus, ChevronLeft, ChevronRight, Trash2, TrendingUp, TrendingDown } from 'lucide-react'
-import { useBudget, CATEGORIES } from '../hooks/useBudget'
+import { useBudget, CATEGORIES, INCOME_CATEGORIES, getCat } from '../hooks/useBudget'
 import Modal from '../components/Modal'
 
 function formatMoney(n) {
   return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(n)
 }
-
-const getCat = (id) => CATEGORIES.find(c => c.id === id) || CATEGORIES[CATEGORIES.length - 1]
 
 export default function Budget() {
   const {
@@ -42,8 +40,8 @@ export default function Budget() {
 
   const isCurrentMonth = viewYear === now.getFullYear() && viewMonth === now.getMonth()
 
-  const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','Май','Июнь',
-    'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь']
+  const MONTH_NAMES = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+    'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
 
   const handleAdd = async () => {
     if (!form.amount || isNaN(Number(form.amount))) return
@@ -129,9 +127,8 @@ export default function Budget() {
           <button
             key={id}
             onClick={() => setActiveTab(id)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              activeTab === id ? 'bg-accent/15 text-accent' : 'text-text-muted hover:text-text-secondary'
-            }`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === id ? 'bg-accent/15 text-accent' : 'text-text-muted hover:text-text-secondary'
+              }`}
           >
             {label}
           </button>
@@ -245,7 +242,7 @@ export default function Budget() {
                       <div key={d.id} className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
                           <div className="w-2 h-2 rounded-full" style={{ background: d.color }} />
-                          <span className="text-xs text-text-secondary">{getCat(d.id).icon} {d.name}</span>
+                          <span className="text-xs text-text-secondary">{getCat(d.id, 'expense').icon} {d.name}</span>
                         </div>
                         <span className="text-xs font-mono text-text-primary">{formatMoney(d.value)} ₽</span>
                       </div>
@@ -281,8 +278,8 @@ export default function Budget() {
                   {top5.map((t, i) => (
                     <div key={t.id} className="flex items-center gap-2">
                       <span className="text-xs text-text-muted font-mono w-4">{i + 1}</span>
-                      <span className="text-sm">{getCat(t.category).icon}</span>
-                      <span className="flex-1 text-sm text-text-secondary truncate">{t.comment || getCat(t.category).label}</span>
+                      <span className="text-sm">{getCat(t.category, 'expense').icon}</span>
+                      <span className="flex-1 text-sm text-text-secondary truncate">{t.comment || getCat(t.category, 'expense').label}</span>
                       <span className="text-sm font-mono text-status-red">−{formatMoney(t.amount)} ₽</span>
                     </div>
                   ))}
@@ -299,7 +296,7 @@ export default function Budget() {
               <p className="text-center text-sm text-text-muted py-8">Нет транзакций</p>
             )}
             {stats.txs.map(tx => {
-              const cat = getCat(tx.category)
+              const cat = getCat(tx.category, tx.type)
               return (
                 <div key={tx.id} className="card p-3 flex items-center gap-3 fade-in">
                   <span className="text-lg">{cat.icon}</span>
@@ -335,18 +332,16 @@ export default function Budget() {
           {/* Income/Expense toggle */}
           <div className="flex rounded-xl overflow-hidden border border-bg-border">
             <button
-              onClick={() => setForm(p => ({ ...p, type: 'expense' }))}
-              className={`flex-1 py-2.5 text-sm font-medium transition-all ${
-                form.type === 'expense' ? 'bg-status-red/20 text-status-red' : 'text-text-muted'
-              }`}
+              onClick={() => setForm(p => ({ ...p, type: 'expense', category: CATEGORIES[0].id }))}
+              className={`flex-1 py-2.5 text-sm font-medium transition-all ${form.type === 'expense' ? 'bg-status-red/20 text-status-red' : 'text-text-muted'
+                }`}
             >
               ↓ Расход
             </button>
             <button
-              onClick={() => setForm(p => ({ ...p, type: 'income' }))}
-              className={`flex-1 py-2.5 text-sm font-medium transition-all ${
-                form.type === 'income' ? 'bg-status-green/20 text-status-green' : 'text-text-muted'
-              }`}
+              onClick={() => setForm(p => ({ ...p, type: 'income', category: INCOME_CATEGORIES[0].id }))}
+              className={`flex-1 py-2.5 text-sm font-medium transition-all ${form.type === 'income' ? 'bg-status-green/20 text-status-green' : 'text-text-muted'
+                }`}
             >
               ↑ Доход
             </button>
@@ -368,15 +363,14 @@ export default function Budget() {
           <div>
             <label className="text-xs text-text-muted mb-2 block">Категория</label>
             <div className="grid grid-cols-4 gap-1.5">
-              {CATEGORIES.map(cat => (
+              {(form.type === 'income' ? INCOME_CATEGORIES : CATEGORIES).map(cat => (
                 <button
                   key={cat.id}
                   onClick={() => setForm(p => ({ ...p, category: cat.id }))}
-                  className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all ${
-                    form.category === cat.id
+                  className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all ${form.category === cat.id
                       ? 'border-accent/50 bg-accent/10'
                       : 'border-bg-border hover:border-bg-hover'
-                  }`}
+                    }`}
                 >
                   <span className="text-lg">{cat.icon}</span>
                   <span className="text-[9px] text-text-muted leading-none text-center">{cat.label}</span>

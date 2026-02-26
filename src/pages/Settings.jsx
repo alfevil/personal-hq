@@ -1,11 +1,21 @@
 import React from 'react'
 import { getUserId } from '../lib/supabase'
-import { Shield, Database, Github, ExternalLink } from 'lucide-react'
+import { Shield, Database, BrainCircuit, FolderGit2, Wallet } from 'lucide-react'
+import { useThoughts } from '../hooks/useThoughts'
+import { useProjects } from '../hooks/useProjects'
+import { useBudget } from '../hooks/useBudget'
 
 const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
 
 export default function Settings() {
   const userId = getUserId()
+  const { thoughts } = useThoughts()
+  const { projects } = useProjects()
+  const { getMonthStats } = useBudget()
+
+  const activeProjectsCount = projects.filter(p => p.status === 'active').length
+  const now = new Date()
+  const { balance } = getMonthStats(now.getFullYear(), now.getMonth())
 
   return (
     <div className="flex flex-col h-full">
@@ -33,6 +43,16 @@ export default function Settings() {
           </div>
         )}
 
+        {/* Stats info */}
+        <div className="card p-4">
+          <p className="text-xs text-text-muted mb-3 uppercase tracking-wider">Моя Статистика</p>
+          <div className="space-y-2">
+            <InfoRow icon={<BrainCircuit size={14} className="text-accent" />} label="Всего мыслей" value={thoughts.length} />
+            <InfoRow icon={<FolderGit2 size={14} className="text-status-green" />} label="Активных проектов" value={activeProjectsCount} />
+            <InfoRow icon={<Wallet size={14} className="text-status-yellow" />} label="Баланс за месяц" value={`${new Intl.NumberFormat('ru-RU').format(balance || 0)} ₽`} />
+          </div>
+        </div>
+
         {/* Tech info */}
         <div className="card p-4">
           <p className="text-xs text-text-muted mb-3 uppercase tracking-wider">Техническое</p>
@@ -58,7 +78,7 @@ export default function Settings() {
 
         {/* Version */}
         <p className="text-center text-xs text-text-muted pb-4">
-          Personal HQ v1.0.0
+          Personal HQ v1.0.1
         </p>
       </div>
     </div>

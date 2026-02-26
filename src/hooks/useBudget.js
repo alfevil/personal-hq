@@ -2,14 +2,30 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase, getUserId } from '../lib/supabase'
 
 export const CATEGORIES = [
-  { id: 'food',      label: 'Еда',           icon: '🍔', color: '#f97316' },
-  { id: 'transport', label: 'Транспорт',      icon: '🚗', color: '#3b82f6' },
-  { id: 'shopping',  label: 'Покупки',        icon: '🛍️', color: '#a855f7' },
-  { id: 'business',  label: 'Бизнес/Проекты', icon: '💼', color: '#6366f1' },
-  { id: 'subs',      label: 'Подписки',       icon: '📱', color: '#06b6d4' },
-  { id: 'fun',       label: 'Развлечения',    icon: '🎮', color: '#ec4899' },
-  { id: 'other',     label: 'Другое',         icon: '📦', color: '#6b7280' },
+  { id: 'food', label: 'Еда', icon: '🍔', color: '#f97316' },
+  { id: 'transport', label: 'Транспорт', icon: '🚗', color: '#3b82f6' },
+  { id: 'shopping', label: 'Покупки', icon: '🛍️', color: '#a855f7' },
+  { id: 'business', label: 'Бизнес/Проекты', icon: '💼', color: '#6366f1' },
+  { id: 'subs', label: 'Подписки', icon: '📱', color: '#06b6d4' },
+  { id: 'fun', label: 'Развлечения', icon: '🎮', color: '#ec4899' },
+  { id: 'other', label: 'Другое', icon: '📦', color: '#6b7280' },
 ]
+
+export const INCOME_CATEGORIES = [
+  { id: 'salary', label: 'Основная работа', icon: '💰', color: '#22c55e' },
+  { id: 'parttime', label: 'Подработка', icon: '⏱️', color: '#3b82f6' },
+  { id: 'business_inc', label: 'Бизнес', icon: '💼', color: '#8b5cf6' },
+  { id: 'bonus', label: 'Премия', icon: '🎉', color: '#f59e0b' },
+  { id: 'gift', label: 'Подарок/ДР', icon: '🎁', color: '#ec4899' },
+  { id: 'other_inc', label: 'Другое', icon: '💵', color: '#6b7280' },
+]
+
+export const getCat = (id, type = 'expense') => {
+  if (type === 'income') {
+    return INCOME_CATEGORIES.find(c => c.id === id) || INCOME_CATEGORIES[INCOME_CATEGORIES.length - 1]
+  }
+  return CATEGORIES.find(c => c.id === id) || CATEGORIES[CATEGORIES.length - 1]
+}
 
 export function useBudget() {
   const [transactions, setTransactions] = useState([])
