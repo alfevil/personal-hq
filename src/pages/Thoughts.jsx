@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { Pin, FolderOpen, Trash2, Hash } from 'lucide-react'
 import { useThoughts } from '../hooks/useThoughts'
+import Modal from '../components/Modal'
 
 const FILTERS = [
   { id: 'all', label: 'Всё' },
@@ -32,6 +33,8 @@ export default function Thoughts({ onMoveToProject, projects }) {
   const [input, setInput] = useState('')
   const [filter, setFilter] = useState('all')
   const [tagFilter, setTagFilter] = useState(null)
+  const [moveModal, setMoveModal] = useState(false)
+  const [thoughtToMove, setThoughtToMove] = useState(null)
   const inputRef = useRef(null)
 
   const handleSubmit = async (e) => {
@@ -42,8 +45,19 @@ export default function Thoughts({ onMoveToProject, projects }) {
     await add(trimmed)
   }
 
+  const handleOpenMove = (thought) => {
+    setThoughtToMove(thought)
+    setMoveModal(true)
+  }
 
-
+  const handleMove = async (projectId) => {
+    if (thoughtToMove && onMoveToProject) {
+      await onMoveToProject(thoughtToMove, projectId)
+      await remove(thoughtToMove.id)
+    }
+    setMoveModal(false)
+    setThoughtToMove(null)
+  }
   const filteredThoughts = thoughts.filter(t => {
     const d = new Date(t.created_at)
     const now = new Date()
@@ -96,8 +110,8 @@ export default function Thoughts({ onMoveToProject, projects }) {
             key={f.id}
             onClick={() => setFilter(f.id)}
             className={`flex-shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-all ${filter === f.id
-                ? 'bg-accent/20 text-accent border border-accent/30'
-                : 'text-text-secondary hover:text-text-primary'
+              ? 'bg-accent/20 text-accent border border-accent/30'
+              : 'text-text-secondary hover:text-text-primary'
               }`}
           >
             {f.label}
@@ -108,8 +122,8 @@ export default function Thoughts({ onMoveToProject, projects }) {
             key={tag}
             onClick={() => setTagFilter(tagFilter === tag ? null : tag)}
             className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${tagFilter === tag
-                ? 'bg-accent/20 text-accent border border-accent/30'
-                : 'text-text-muted hover:text-text-secondary'
+              ? 'bg-accent/20 text-accent border border-accent/30'
+              : 'text-text-muted hover:text-text-secondary'
               }`}
           >
             <Hash size={10} />
@@ -153,15 +167,15 @@ export default function Thoughts({ onMoveToProject, projects }) {
                 <button
                   onClick={() => togglePin(thought.id, thought.pinned)}
                   className={`p-1.5 rounded-lg transition-all ${thought.pinned
-                      ? 'text-accent bg-accent/10'
-                      : 'text-text-muted hover:text-text-primary hover:bg-bg-hover'
+                    ? 'text-accent bg-accent/10'
+                    : 'text-text-muted hover:text-text-primary hover:bg-bg-hover'
                     }`}
                   title="Закрепить"
                 >
                   <Pin size={13} className={thought.pinned ? 'fill-current' : ''} />
                 </button>
                 <button
-                  onClick={() => onMoveToProject?.(thought)}
+                  onClick={() => handleOpenMove(thought)}
                   className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-hover transition-all"
                   title="Перенести в проект"
                 >
@@ -179,6 +193,25 @@ export default function Thoughts({ onMoveToProject, projects }) {
           </div>
         ))}
       </div>
+
+      {/* Move to Project Modal */}
+      <Modal open={moveModal} onClose={() => setMoveModal(false)} title="В какой проект?">
+        <div className="space-y-2">
+          {projects && projects.filter(p => p.status === 'active').map(p => (
+            <button
+              key={p.id}
+              onClick={() => handleMove(p.id)}
+              className="w-full card p-3 flex items-center gap-3 hover:border-accent/50 transition-colors text-left"
+            >
+              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: p.color }} />
+              <span className="text-sm font-medium text-text-primary flex-1 truncate">{p.name}</span>
+            </button>
+          ))}
+          {(!projects || projects.filter(p => p.status === 'active').length === 0) && (
+            <p className="text-center text-sm text-text-muted py-4">Нет активных проектов</p>
+          )}
+        </div>
+      </Modal>
     </div>
   )
 }

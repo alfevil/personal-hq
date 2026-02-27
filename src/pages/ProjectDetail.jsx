@@ -7,9 +7,9 @@ import { calcProgress } from '../hooks/useProjects'
 import Modal from '../components/Modal'
 
 const STAGE_STATUSES = [
-  { id: 'todo',       label: 'Не начат',  color: 'text-text-muted' },
+  { id: 'todo', label: 'Не начат', color: 'text-text-muted' },
   { id: 'in_progress', label: 'В процессе', color: 'text-status-blue' },
-  { id: 'done',       label: 'Готово',    color: 'text-status-green' },
+  { id: 'done', label: 'Готово', color: 'text-status-green' },
 ]
 
 const PROJECT_STATUS_OPTIONS = ['active', 'frozen', 'done']
@@ -76,11 +76,16 @@ export default function ProjectDetail({
     setEditingName(false)
   }
 
+  const handleDeleteProject = async () => {
+    await deleteProject(project.id)
+    onBack() // Go back to projects list
+  }
+
   const SECTIONS = [
     { id: 'stages', label: 'Этапы', count: stages.length },
-    { id: 'tasks',  label: 'Задачи', count: tasks.filter(t => !t.stage_id).length },
-    { id: 'notes',  label: 'Заметки', count: notes.length },
-    { id: 'links',  label: 'Ссылки', count: links.length },
+    { id: 'tasks', label: 'Задачи', count: tasks.filter(t => !t.stage_id).length },
+    { id: 'notes', label: 'Заметки', count: notes.length },
+    { id: 'links', label: 'Ссылки', count: links.length },
   ]
 
   return (
@@ -116,6 +121,17 @@ export default function ProjectDetail({
               <option key={s} value={s}>{STATUS_LABELS[s]}</option>
             ))}
           </select>
+          <button
+            onClick={() => {
+              if (window.confirm('Точно удалить этот проект? Это действие нельзя отменить.')) {
+                handleDeleteProject()
+              }
+            }}
+            className="p-1.5 rounded-lg text-text-muted hover:bg-status-red/10 hover:text-status-red transition-all"
+            title="Удалить проект"
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
 
         {/* Progress */}
@@ -139,17 +155,15 @@ export default function ProjectDetail({
           <button
             key={s.id}
             onClick={() => setActiveSection(s.id)}
-            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              activeSection === s.id
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeSection === s.id
                 ? 'bg-accent/15 text-accent'
                 : 'text-text-muted hover:text-text-secondary'
-            }`}
+              }`}
           >
             {s.label}
             {s.count > 0 && (
-              <span className={`text-[10px] rounded-full px-1.5 py-0.5 ${
-                activeSection === s.id ? 'bg-accent/20' : 'bg-bg-hover'
-              }`}>
+              <span className={`text-[10px] rounded-full px-1.5 py-0.5 ${activeSection === s.id ? 'bg-accent/20' : 'bg-bg-hover'
+                }`}>
                 {s.count}
               </span>
             )}
